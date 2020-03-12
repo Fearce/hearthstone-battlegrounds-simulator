@@ -261,6 +261,15 @@ void Minion::on_attack_and_kill(Battle& battle, int player, int pos, bool overki
   }
 }
 
+void Minion::on_attack(Battle& battle, int player, int pos, int attack) {
+  switch (type) {
+    case MinionType::GlyphGuardian:
+      buff(double_if_golden(attack), 0);
+      break;
+    default:;
+  }
+}
+
 void Minion::on_after_friendly_attack(Minion const& attacker) {
   switch (type) {
     case MinionType::FesterootHulk:
@@ -274,6 +283,19 @@ void Minion::on_break_friendly_divine_shield() {
   switch (type) {
     case MinionType::BolvarFireblood:
       buff(double_if_golden(2),0);
+      break;
+    default:;
+  }
+}
+
+void Minion::on_battle_start(Battle& battle, int player, Board &board) {
+  switch (type) {
+    case MinionType::RedWhelp:
+      int count = 1; // exclude self
+      count += board.minions.count_if([](Minion const& to) { return to.has_tribe(Tribe::Dragon); });
+      TWICE_IF_GOLDEN() {
+        battle.damage_random_minion(1-player, count);
+      }
       break;
     default:;
   }

@@ -40,6 +40,7 @@ void Battle::start() {
   board[0].next_attacker = 0;
   board[1].next_attacker = 0;
   do_hero_powers();
+  do_battle_start();
 }
 
 int find_attacker(Board const& board) {
@@ -174,6 +175,12 @@ void Battle::damage_all(int player, int amount) {
   });
 }
 
+void Battle::buff_all(int player, int amount) {
+  board[player].minions.for_each_with_pos([&](int pos, Minion& m) {
+    if (!m.dead()) m.attack += 3;
+  });
+}
+
 void Battle::on_break_divine_shield(int player) {
   board[player].minions.for_each_alive([&](Minion& m) {
     m.on_break_friendly_divine_shield();
@@ -302,7 +309,7 @@ void Board::on_summoned(Minion& summoned, int pos, bool played) {
 // -----------------------------------------------------------------------------
 // Hero powers
 // -----------------------------------------------------------------------------
-
+#define TWICE_IF_GOLDEN() for(int i=0;i<(golden?2:1);++i)
 void Battle::do_hero_powers() {
   for (int player=0; player<2; ++player) {
     if (board[player].use_hero_power) {
@@ -312,6 +319,17 @@ void Battle::do_hero_powers() {
       do_hero_power(board[player].hero, player);
       board[player].use_hero_power = false;
     }
+  }
+}
+
+void Battle::do_battle_start() {
+  for (int player=0; player<2; ++player) {
+    board[player].minions.for_each_with_pos([&](int p, Minion& m) {
+        switch (m.type) { 
+          case MinionType::RedWhelp:
+            m.on_battle_start(*this, player, board[player]);
+        };
+    });
   }
 }
 

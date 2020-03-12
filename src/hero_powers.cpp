@@ -37,6 +37,9 @@ void Battle::do_hero_power(HeroType hp, int player) {
         board[player].minions[0].attack += 10;
       }
       break;
+    case HeroType::Deathwing:
+      buff_all(1-player, 3);
+      break;
     default:;
   }
 }
